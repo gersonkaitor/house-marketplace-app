@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../components/Spinner";
+import { toast } from "react-toastify";
 
 function CreateListing() {
-  const [geolocationEnabled, setGeolocationEnabled] = useState(true);
+  const [geolocationEnabled, setGeolocationEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: "rent",
@@ -61,33 +62,77 @@ function CreateListing() {
     //eslint-disabled-next-line react-hooks/exhaustive-deps
   }, [isMounted]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setLoading(true);
+
+    if (discountedPrice >= regularPrice) {
+      setLoading(false);
+      toast.error("Discounted price needs to be less than regular price");
+      return;
+    }
+
+    if (images.length > 6) {
+      setLoading(false);
+      toast.error("Max 6 images");
+      return;
+    }
+
+    let geolocation = {};
+    let location;
+
+    if (geolocationEnabled) {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.REACT_APP_GEOCODE_API_KEY}`
+      );
+
+      const data = response.json();
+      geolocation.lat = data.result[0]?.geometry.location.lat ?? 0;
+      geolocation.lng = data.result[0]?.geometry.location.lng ?? 0;
+
+      location =
+        data.status === "ZERO_STATUS"
+          ? undefined
+          : data.results[0]?.formatted_address;
+
+      if (location === undefined || location.includes("undefined")) {
+        setLoading(false);
+        toast.error("Please enter a correct address");
+      }
+
+    } else {
+      geolocation.lat = latitude;
+      geolocation.lng = longitude;
+      location = address;
+    }
+
+    setLoading(false);
   };
 
   const onMutate = (e) => {
-    let boolean = null
-    if(e.target.value === 'true'){
-      boolean = true
+    let boolean = null;
+    if (e.target.value === "true") {
+      boolean = true;
     }
-    if(e.target.value === 'false'){
-      boolean = false
+    if (e.target.value === "false") {
+      boolean = false;
     }
 
     //Files
-    if(e.target.files){
-      setFormData((prevState) =>({
+    if (e.target.files) {
+      setFormData((prevState) => ({
         ...prevState,
-        images: e.target.files
-      }))
+        images: e.target.files,
+      }));
     }
 
     //Text/Boolean/Numbers
-    if(!e.target.files){
+    if (!e.target.files) {
       setFormData((prevState) => ({
         ...prevState,
-        [e.target.id] : boolean ?? e.target.value
-      }))
+        [e.target.id]: boolean ?? e.target.value,
+      }));
     }
   };
 
@@ -309,25 +354,24 @@ function CreateListing() {
             </>
           )}
 
-          <label className='formLabel'>Images</label>
-          <p className='imagesInfo'>
+          <label className="formLabel">Images</label>
+          <p className="imagesInfo">
             The first image will be the cover (max 6).
           </p>
           <input
-            className='formInputFile'
-            type='file'
-            id='images'
+            className="formInputFile"
+            type="file"
+            id="images"
             onChange={onMutate}
-            max='6'
-            accept='.jpg,.png,.jpeg'
+            max="6"
+            accept=".jpg,.png,.jpeg"
             multiple
             required
           />
 
-          <button type='submit' className='primaryButton createListingButton'>
+          <button type="submit" className="primaryButton createListingButton">
             Create Listing
           </button>
-
         </form>
       </main>
     </div>
