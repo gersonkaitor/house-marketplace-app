@@ -44,7 +44,7 @@ function Listing() {
           <SwiperSlide key={index}>
             <div
               style={{
-                background: `url(${listing.imageUrls[index]}) center no-repeat`,
+                background: `url(${url}) center no-repeat`,
                 backgroundSize: 'cover',
                 height: '50vh'
               }}
