@@ -89,13 +89,17 @@ function Profile() {
   };
 
   const onDelete = async (listingId) => {
-    if(window.confirm("Are sure you want to delete?")){
-      await deleteDoc(doc(db,'listings',listingId))
-      const updatedListings = listings.filter((listing) => listing.id !== listingId)
-      setListings(updatedListings)
-      toast.success('Successfully deleted listing')
+    if (window.confirm("Are sure you want to delete?")) {
+      await deleteDoc(doc(db, "listings", listingId));
+      const updatedListings = listings.filter(
+        (listing) => listing.id !== listingId
+      );
+      setListings(updatedListings);
+      toast.success("Successfully deleted listing");
     }
-  }
+  };
+
+  const onEdit = (listingId) => navigate(`/edit-listing/${listingId}`)
 
   return (
     <div className="profile">
@@ -150,7 +154,13 @@ function Profile() {
             <p className="listingText">Your Listings</p>
             <ul className="listingList">
               {listings.map((listing) => (
-                <ListingItem listing={listing.data} id={listing.id} key={listing.id} onDelete={() => onDelete(listing.id)}/>
+                <ListingItem
+                  listing={listing.data}
+                  id={listing.id}
+                  key={listing.id}
+                  onDelete={() => onDelete(listing.id)}
+                  onEdit={() => onEdit(listing.id)}
+                />
               ))}
             </ul>
           </>
