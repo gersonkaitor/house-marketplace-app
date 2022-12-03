@@ -1,4 +1,3 @@
-import tempImage from "../assets/jpg/rentCategoryImage.jpg";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
